@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  controller:
+    build:
+      context: .
+      dockerfile: Dockerfile.controller
+    container_name: controller-container
+    hostname: controller-container
+    networks:
+      - mpi_network
+    volumes:
+      - ./output:/app/output
+    ports:
+      - "2222:22"
+
+  generator:
+    build:
+      context: .
+      dockerfile: Dockerfile.generator
+    container_name: generator-container
+    hostname: generator-container
+    networks:
+      - mpi_network
+    ports:
+      - "2223:22"
+
+  preprocessor:
+    build:
+      context: .
+      dockerfile: Dockerfile.preprocessor
+    container_name: preprocessor-container
+    hostname: preprocessor-container
+    networks:
+      - mpi_network
+    ports:
+      - "2224:22"
+
+  analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile.analyzer
+    container_name: analyzer-container
+    hostname: analyzer-container
+    networks:
+      - mpi_network
+    ports:
+      - "2225:22"
+
+  visualizer:
+    build:
+      context: .
+      dockerfile: Dockerfile.visualizer
+    container_name: visualizer-container
+    hostname: visualizer-container
+    networks:
+      - mpi_network
+    volumes:
+      - ./output:/app/output
+    ports:
+      - "2226:22"
+
+networks:
+  mpi_network:
+    driver: bridge 

@@ -1,0 +1,36 @@
+FROM ubuntu:latest
+
+ENV ROLE=controller
+
+# Install OpenMPI and required tools
+RUN apt-get update && apt-get install -y \
+    openmpi-bin \
+    openssh-client openssh-server iproute2 iputils-ping \
+    build-essential libopenmpi-dev \
+    libboost-all-dev
+
+# Create an SSH key pair for the 'root' user
+RUN ssh-keygen -q -N "" -t rsa -f /root/.ssh/id_rsa && \
+    echo 'root:password' | chpasswd && \
+    cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys && \
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+
+# Copy the SSH keys for inter-container communication
+COPY keys/id_rsa.pub /root/.ssh/id_rsa.pub
+COPY keys/id_rsa /root/.ssh/id_rsa
+
+# Set permissions for SSH
+RUN chmod 600 /root/.ssh/id_rsa && \
+    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
+    echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config && \
+    echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
+
+# Copy source code and configs to the container
+COPY src/data_pipeline.cpp /app/data_pipeline.cpp
+COPY rankfile.txt /app/rankfile.txt
+
+# Compile the MPI program
+RUN mpicxx -std=c++17 /app/data_pipeline.cpp -o /app/data_pipeline
+
+# Start SSH service and keep container running
+CMD service ssh start && tail -f /dev/null 

@@ -1,0 +1,5 @@
+rank 0=controller-container slots=1
+rank 1=generator-container slots=1
+rank 2=preprocessor-container slots=1
+rank 3=analyzer-container slots=1
+rank 4=visualizer-container slots=1 
